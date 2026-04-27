@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from rag_services import (
     extract_text,
@@ -10,7 +11,8 @@ from rag_services import (
     download_pdf,
 )
 from database import supabase
-
+class ChatRequest(BaseModel):
+    question: str
 app = FastAPI()
 
 app.add_middleware(
@@ -24,13 +26,18 @@ app.add_middleware(
 
 # 🔹 Chat endpoint
 @app.post("/chat")
-async def chat_endpoint(request: dict):
-    question = request.get("question")
+async def chat_endpoint(request: ChatRequest):
+    try:
+        question = request.question
 
-    context = retrieve_context(question)
-    answer = get_llm_response(context, question)
+        context = retrieve_context(question)
+        answer = get_llm_response(context, question)
 
-    return {"answer": answer}
+        return {"answer": answer}
+
+    except Exception as e:
+        print("ERROR:", e)
+        return {"answer": "Server error occurred"}
 
 
 # 🔹 Clear old embeddings (FIXED)
