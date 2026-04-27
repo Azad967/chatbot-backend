@@ -5,3 +5,5 @@ sentence-transformers
 supabase
 python-dotenv
 openai
+requests
+torch
